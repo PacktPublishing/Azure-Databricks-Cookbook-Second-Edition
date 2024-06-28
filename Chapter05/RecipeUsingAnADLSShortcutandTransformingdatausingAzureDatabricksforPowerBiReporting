@@ -1,0 +1,13 @@
+#Copy and paste the following script into your new notebook. Then, execute the following
+#Python script in your notebook to create a Delta table within your ADLS Gen2 account. This
+#script reads sample Parquet data and then writes it as a Delta table into your ADLS account:
+# Adjust the file path to point to your sample parquet data
+#using the following format:
+
+"abfss://<storage name>@<container name>.dfs.core.windows.net/<filepath>"
+# The line below reads Parquet files from your ADLS account
+
+df = spark.read.format('Parquet').load("abfss://datasetsv1@olsdemo.dfs.core.windows.net/demo/full/dimension_city/")
+#This line writes the read data as Delta tables back into your
+ADLS account
+df.write.mode("overwrite").format("delta").save("abfss://datasetsv1@olsdemo.dfs.core.windows.net/demo/adb_dim_city_delta/")

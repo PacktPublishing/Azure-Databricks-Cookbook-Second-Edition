@@ -1,4 +1,5 @@
-
+#Review the sample Customers CSV files:
+display(dbutils.fs.ls("/mnt/adls/Common/Customer/csvFiles/")
 # Ingesting CSV files
 # Create a Delta table for the CSV files
 %sql

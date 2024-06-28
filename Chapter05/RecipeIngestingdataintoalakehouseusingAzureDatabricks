@@ -1,0 +1,29 @@
+from pyspark.sql import SparkSession
+
+# Initialize Spark session
+spark = SparkSession.builder.appName("SquirrelDataAnalysis").getOrCreate()
+
+# Step 1: Set up your environment
+# Store the ABFS path to your Fabric Lakehouse
+oneLakePath = 'abfss://myWorkspace@onelake.dfs.fabric.microsoft.com/myLakehouse.Lakehouse/Files/'
+
+# Step 2: Import data
+# Load data from a public dataset into a DataFrame
+yellowTaxiDF = spark.read.format("csv").option("header", "true").option("inferSchema", "true").load("/databricksdatasets/nyctaxi/tripdata/yellow/yellow_tripdata_2019-12.csv.gz")
+
+# Step 3: Transform data
+# Apply filtering to refine the dataset based on specific criteria
+filteredTaxiDF = yellowTaxiDF.where(yellowTaxiDF.fare_amount < 4).where(yellowTaxiDF.passenger_count == 4)
+
+# Step 4: Display the filtered data
+# Use the display function to visualize the DataFrame
+display(filteredTaxiDF)
+
+# Step 5: Write data to Fabric Lakehouse
+# Store the refined DataFrame in the specified Lakehouse path
+filteredTaxiDF.write.format("csv").option("header", "true").mode("overwrite").csv(oneLakePath)
+
+# Step 6: Verify data transfer
+# Read back the data from Lakehouse to confirm accuracy
+LakehouseRead = spark.read.format('csv').option("header", "true").load(oneLakePath)
+display(LakehouseRead.limit(10))

@@ -1,0 +1,8 @@
+Prompt Input 1
+
+I want you to act as a database engineer. Can you analyze the following error, explain the error and provide recommendations for resolution? ? QVX_UNEXPECTED_END_OF_DATA: SQL##f - SqlState: S1000, ErrorCode: 61, ErrorMsg: [Simba][Hardy] (61) Server returned error with no error message during operation: FetchResults. 
+
+Prompt Input 2
+
+I want you to act as Databricks Developer. I need to write Python code that will allow me to connect storage located in Microsoft Fabric. Please explain the code you generate in a bullet format.
+

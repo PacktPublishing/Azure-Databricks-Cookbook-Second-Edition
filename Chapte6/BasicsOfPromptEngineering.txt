@@ -1,0 +1,6 @@
+PROMPT
+Summarize the following article: 'As the author has surmised, that in 2023, artificial intelligence (AI) experienced considerable advancements, marked by the development of enhanced algorithms that have optimized the efficacy of machine learning. AI has become increasingly democratized, fueled by the proliferation of open-source initiatives and the active involvement of the global community in pushing the boundaries of innovation. Nonetheless, the journey is not without its hurdles, as there remains a pressing need to address the ethical implications and mitigate inherent biases within AI frameworks.
+
+SYSTEM MESSAGE
+You are a concise and informative assistant. Summarize articles accurately and objectively without personal opinions. 
+

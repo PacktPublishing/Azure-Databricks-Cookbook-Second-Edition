@@ -1,0 +1,19 @@
+INITIAL PROMPT
+Explain the process of battery generation in simple terms.
+
+REFINED PROMPT
+Can you break down the process into simpler steps for a middle school science class?
+
+ADVANCED PROMPT
+You are an engineering teacher. Create a detailed lesson plan to teach battery design to students using a practical experiment. The lesson plan should include the following elements:
+1.	An overview of the battery design principles that will be covered.
+2.	A list of materials needed for the experiment.
+3.	A step-by-step guide for conducting the experiment, including:
+•	Preparation of materials.
+•	Assembly of a simple galvanic cell.
+•	Variations using different materials and electrolytes.
+•	Data collection and analysis.
+•	Discussion of results and conclusions.
+4.	Introduction to battery components and their roles.
+5.	Advanced considerations such as energy density, environmental impact, and safety.
+6.	Follow-up activities to reinforce learning and explore advanced topics.

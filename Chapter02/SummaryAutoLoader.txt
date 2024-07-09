@@ -1,60 +1,324 @@
-# Import necessary libraries
+#RecipeLoadingDataIncrementallyUsingAutoLoader.py
+#Run in python
+dbutils.fs.mounts()
+
+#Run in python
+dbutils.fs.ls("/mnt/your-mount-name")
+
+#Run in Spark
+file_path = "/mnt/your-mount-name/path/to/your-file.csv"
+df = spark.read.format("csv").option("header", "true").
+load(file_path)
+df.show()
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, count, avg, max, lower, when, initcap
-
-# Initialize Spark session for Customer Data Aggregation
-spark = SparkSession.builder.appName("CustomerDataAggregation").getOrCreate()
-
-# Define the schema based on the known structure of the CSV
-schema = "customer_id INT, name STRING, age INT, email STRING, customer_status STRING"
-
-# Path to the uploaded CSV file
-path_to_csv = "/mnt/data/part-00000-tid3200334632332214470-9b4dec79-7e2e-495d-8657-3b5457ed3753-108-1-c000.csv"
-
-# Set up Auto Loader for reading data
-df = spark.readStream.format("cloudFiles").option("cloudFiles.format", "csv").option("path", path_to_csv).option("header", "true").schema(schema).load()
-
+from pyspark.sql.functions import col, count, avg,
+max
+# Create or get the Spark session
+spark = SparkSession.builder.
+appName("CustomerDataAggregation").getOrCreate()
+# Path where the uploaded CSV file is stored
+path_to_csv = "/mnt/data/part-00000-tid3200334632332214470-9b4dec79-7e2e-495d-8657-
+3b5457ed3753-108-1-c000.csv"
+# Define the schema based on the known structure of
+the CSV
+schema = "customer_id INT, name STRING, age INT,
+email STRING, customer_status STRING"
+# Set up the Auto Loader
+df = (spark.readStream
+ .format("cloudFiles")
+ .option("cloudFiles.format", "csv")
+ .option("path", path_to_csv)
+ .option("header", "true")
+ .schema(schema)
+ .load())
 # Create a table using the DataFrame
-df.writeStream.format("delta").option("checkpointLocation", "/mnt/data/checkpoints").table("customers")
-
-# Load the Auto Loader table as a DataFrame and perform aggregation operations
+df.writeStream.format("delta").
+option("checkpointLocation", "/mnt/data/
+checkpoints").table("customers")
+# Load the Auto Loader table as a DataFrame
 customers_df = spark.table("customers")
-aggregated_df = customers_df.groupBy("customer_status").agg(count("*").alias("total_customers"), avg("age").alias("average_age"))
+# Perform aggregation operations
+aggregated_df = (customers_df.groupBy("customer_
+status")
+ .agg(count("*").alias("total_customers"),
+ avg("age").alias("average_age")))
+# Show the results
 aggregated_df.show()
-
 # Find the oldest customer per status
-oldest_customer_df = customers_df.groupBy("customer_status").agg(max("age").alias("max_age")).join(customers_df, ["customer_status"], "inner").select("customer_status", "name", "age").filter(col("age") == col("max_age"))
+oldest_customer_df = (customers_df.groupBy("customer_
+status")
+ .agg(max("age").alias("max_age"))
+ .join(customers_df, ["customer_status"], "inner")
+ .select("customer_status", "name", "age")
+ .filter(col("age") == col("max_age")))
+# Show the oldest customers per status
 oldest_customer_df.show()
-
 # Optionally, save the results for further analysis
-aggregated_df.write.format("delta").mode("overwrite").save("/mnt/data/aggregated_customer_data")
+or reporting
+aggregated_df.write.format("delta").
+mode("overwrite").save("/mnt/data/aggregated_
+customer_data")
 
-# Initialize Spark session for Customer Data Transformation
-spark = SparkSession.builder.appName("CustomerDataTransformation").getOrCreate()
 
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, when, upper
+# Initialize Spark session
+spark = SparkSession.builder.
+appName("CustomerDataTransformation").getOrCreate()
+# Define the path to the uploaded CSV file
+path_to_csv = "/mnt/data/part-00000-tid3200334632332214470-9b4dec79-7e2e-495d-8657-3b5457ed3753-
+108-1-c000.csv"
 # Auto Loader setup to ingest CSV data
-customers_df = spark.readStream.format("cloudFiles").option("cloudFiles.format", "csv").option("path", path_to_csv).option("header", "true").load()
+customers_df = (spark.readStream.format("cloudFiles")
+ .option("cloudFiles.format", "csv")
+ .option("path", path_to_csv)
+ .option("header", "true")
+ .load())
+# Define a table using the DataFrame for easier SQL
+operations
+customers_df.writeStream.format("delta").
+option("checkpointLocation", "/mnt/checkpoints").
+table("customers")
 
-# Define a table using the DataFrame for easier SQL operations
-customers_df.writeStream.format("delta").option("checkpointLocation", "/mnt/checkpoints").table("customers")
-
-# Apply transformations to standardize email addresses, categorize into age groups, and capitalize names
-customers_df = customers_df.withColumn("email", lower(col("email"))).withColumn("age_group", when(col("age") < 18, "Under 18").when((col("age") >= 18) & (col("age") <= 35), "18-35").when((col("age") > 35) & (col("age") <= 65), "36-65").otherwise("Above 65")).withColumn("name", initcap(col("name")))
+# Load the Auto Loader table as a DataFrame
+customers_df = spark.table("customers")
+# Transformation 1: Standardize email addresses
+customers_df = customers_df.withColumn("email",
+lower(col("email")))
+# Transformation 2: Categorize into age groups
+customers_df = customers_df.withColumn("age_group",
+ when(col("age") < 18, "Under 18")
+ .when((col("age") >= 18) & (col("age") <= 35),
+"18-35")
+ .when((col("age") > 35) & (col("age") <= 65),
+"36-65")
+ .otherwise("Above 65"))
+# Transformation 3: Capitalize names
+customers_df = customers_df.withColumn("name",
+initcap(col("name")))
+# Display the transformed DataFrame
 customers_df.show()
+# Optionally, save the transformed data for further
+analysis
+customers_df.write.format("delta").mode("overwrite").
+save("/mnt/data/transformed_customers")
 
-# Save the transformed data
-customers_df.write.format("delta").mode("overwrite").save("/mnt/data/transformed_customers")
 
-# Set up the session and define the directory path for incremental loading
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, lower, when,
+initcap
+# Initialize Spark session
+spark = SparkSession.builder.
+appName("IncrementalCustomerDataLoad").getOrCreate()
+# Directory path where new CSV files are stored
 path_to_csv_dir = "/mnt/data/csv_files/"
 
-# Configure Auto Loader for incremental loading
-customers_df = spark.readStream.format("cloudFiles").option("cloudFiles.format", "csv").option("cloudFiles.useIncrementalListing", "true").option("path", path_to_csv_dir).option("header", "true").schema(schema).load()
 
-# Define a table for easier SQL operations and apply transformations
-customers_df.writeStream.format("delta").option("checkpointLocation", "/mnt/checkpoints/customers").table("customers")
-transformed_df = customers_df.withColumn("email", lower(col("email"))).withColumn("age_group", when(col("age") < 18, "Under 18").when((col("age") >= 18) & (col("age") <= 35), "18-35").when((col("age") > 35) & (col("age") <= 65), "36-65").otherwise("Above 65")).withColumn("name", initcap(col("name")))
+# Schema definition (optional, remove if you prefer
+schema inference)
+schema = "customer_id INT, name STRING, age INT,
+email STRING, customer_status STRING"
+# Auto Loader setup to ingest CSV data incrementally
+customers_df = (spark.readStream
+ .format("cloudFiles")
+ .option("cloudFiles.format", "csv")
+ .option("cloudFiles.useIncrementalListing", "true") # Enable incremental file processing
+ .option("path", path_to_csv_dir)
+ .option("header", "true")
+ .schema(schema) # Comment this if schema
+inference is preferred
+ .load())
+# Define a table using the DataFrame for easier SQL
+operations
+customers_df.writeStream.format("delta").
+option("checkpointLocation", "/mnt/checkpoints/
+customers").table("customers")
 
-# Writing the transformed data to a Delta table continuously
-query = transformed_df.writeStream.format("delta").option("checkpointLocation", "/mnt/checkpoints/transformed_customers").outputMode("append").start("/mnt/data/transformed_customers")
+# Applying transformations
+transformed_df = (customers_df
+ .withColumn("email", lower(col("email")))
+ .withColumn("age_group",
+ when(col("age") < 18, "Under 18")
+ .when((col("age") >= 18) & (col("age") <= 35),
+"18-35")
+ .when((col("age") > 35) & (col("age") <= 65),
+"36-65")
+ .otherwise("Above 65"))
+ .withColumn("name", initcap(col("name"))))
+# Writing the transformed data to a Delta table
+continuously
+query = (transformed_df
+ .writeStream
+ .format("delta")
+ .option("checkpointLocation", "/mnt/checkpoints/
+transformed_customers")
+ .outputMode("append")
+ .start("/mnt/data/transformed_customers"))
+# Wait for the streaming to finish (indefinitely in
+production)
 query.awaitTermination()
+
+
+#RecipeDesigningandImprovingProcessingPipelineswithDeltaTables.py
+# Load the initial data into a DataFrame from the uploaded CSV
+
+initial_data = spark.read.format("csv").option("header",
+"true").option("inferSchema", "true").load("/mnt/data/
+dimension_customer.csv")
+# Write the DataFrame to a Delta table
+initial_data.write.format("delta").save("/delta/initial_
+table")
+
+# Read the Delta table into a DataFrame
+delta_table = spark.read.format("delta").load("/delta/
+initial_table")
+# Apply transformations on the DataFrame
+transformed_data = delta_table.filter(delta_table["age"]
+> 18).select("name", "age")
+# Write the transformed data back to the Delta table
+transformed_data.write.format("delta").mode("overwrite").
+save("/delta/transformed_table")
+
+
+# Perform an update operation on the Delta table
+delta_table.update(condition = "age < 18", set =
+{"status": "minor"})
+# Prepare updated data for merging
+updated_data = spark.createDataFrame(...) # hypothetical
+updated data setup
+# Perform a merge operation
+delta_table.merge(
+ source = updated_data,
+ condition = "delta_table.id = updated_data.id",
+ update = {"age": updated_data.age}
+)
+
+
+# Read the transformed Delta table
+delta_table = spark.read.format("delta").load("/delta/
+transformed_table")
+# Add a new column to the Delta table
+delta_table = delta_table.withColumn("new_column",
+lit("default_value"))
+# Write the updated schema back to the Delta table
+delta_table.write.format("delta").mode("overwrite").
+save("/delta/transformed_table")
+
+# Create a temporary view for the Delta table
+delta_table.createOrReplaceTempView("delta_table")
+# Extract test data for transformations
+test_data = spark.sql("SELECT * FROM delta_table WHERE
+age > 30")
+# Compare different versions of the data for validation
+version_1 = spark.read.format("delta").
+option("versionAsOf", 1).load("/delta/transformed_table")
+version_2 = spark.read.format("delta").
+option("versionAsOf", 2).load("/delta/transformed_table")
+
+
+
+#RecipeUsingApacheSparkwithExternalDataSources.py
+# Display the files in the specified directory
+display(dbutils.fs.ls("/mnt/adls/Common/Customer/csvFiles/"))
+
+# Reading the CSV files with inferred schema
+df_cust = spark.read.format("csv").option("header", "true").option("inferSchema", "true").load("/mnt/adls/Common/Customer/csvFiles")
+
+# Importing required types from pyspark.sql.types
+from pyspark.sql.types import *
+
+# Defining the schema
+cust_schema = StructType([
+    StructField("C_CUSTKEY", IntegerType(), True),
+    StructField("C_NAME", StringType(), True),
+    StructField("C_ADDRESS", StringType(), True),
+    StructField("C_NATIONKEY", ShortType(), True),
+    StructField("C_PHONE", StringType(), True),
+    StructField("C_ACCTBAL", DoubleType(), True),
+    StructField("C_MKTSEGMENT", StringType(), True),
+    StructField("C_COMMENT", StringType(), True)
+])
+
+# Reading the CSV files with the defined schema
+df_cust_sch = spark.read \
+    .format("csv") \
+    .option("header", "true") \
+    .schema(cust_schema) \
+    .load("/mnt/adls/Common/Customer/csvFiles")
+
+
+#RecipeIngestingDataUsingCOPYINTO.py
+#Review the sample Customers CSV files:
+display(dbutils.fs.ls("/mnt/adls/Common/Customer/csvFiles/")
+# Ingesting CSV files
+# Create a Delta table for the CSV files
+%sql
+CREATE TABLE IF NOT EXISTS Customers_CSV;
+
+# Use COPY INTO to import CSV files into the Delta table
+%sql
+COPY INTO Customers_CSV
+  FROM '/mnt/adls/Common/Customer/csvFiles/'
+  FILEFORMAT = CSV
+  PATTERN = 'part-0000[6-9]-*.csv'
+  FORMAT_OPTIONS ('header' = 'true')
+  COPY_OPTIONS ('mergeSchema' = 'true');
+
+# Ingesting Parquet files
+# Create a Delta table for the Parquet files
+%sql
+CREATE TABLE IF NOT EXISTS Customers_Parquet;
+
+# Use COPY INTO to import Parquet files into the Delta table
+%sql
+COPY INTO Customers_Parquet
+  FROM '/mnt/adls/Common/Customer/parquetFiles/'
+  FILEFORMAT = PARQUET
+  COPY_OPTIONS ('mergeSchema' = 'true');
+
+#RecipeDecidingWhentoUseCOPYINTOversusAutoLoader.py
+# Import necessary modules
+from pyspark.sql import SparkSession
+
+# Initialize Spark session
+spark = SparkSession.builder.appName("DataAssessmentWorkflow").getOrCreate()
+
+# SQL commands to set up environment and databases
+spark.sql("CREATE DATABASE IF NOT EXISTS customer_db")
+
+spark.sql("""
+CREATE TABLE IF NOT EXISTS customer_db.customer_info (
+    id INT,
+    name STRING,
+    age INT,
+    additional_columns_here STRING
+)
+""")
+
+# Data volume assessment using COPY INTO
+spark.sql("""
+COPY INTO customer_db.customer_info
+FROM 'dbfs:/path/to/your/files/'
+FILE_TYPE = 'CSV'
+""")
+
+# Replace the placeholder path with your actual data path for COPY INTO
+# Record the time it takes to run the COPY INTO command and the cost of the operation
+
+# Data volume assessment using Auto Loader
+df = spark.readStream.format("cloudFiles").option("cloudFiles.format", "csv").load("dbfs:/path/to/your/files/")
+df.writeStream.format("delta").outputMode("append").option("checkpointLocation", "/path/to/checkpoint").start("customer_db.customer_info")
+
+# Replace the placeholders with your actual file paths for Auto Loader
+# Record the time it takes to run the Auto Loader commands and the cost of the operation
+
+# Compare results of COPY INTO and Auto Loader for efficiency and cost-effectiveness
+
+# Schema evolution evaluation for a new batch of data
+df_new_batch = spark.readStream.format("cloudFiles").option("cloudFiles.format", "csv").load("dbfs:/path/to/your/second/batch/")
+df_new_batch.writeStream.format("delta").outputMode("append").option("checkpointLocation", "/path/to/second_checkpoint").start("customer_db.customer_info")
+
+# Replace the placeholder path with your actual data path for the second batch
+
+# Note: Ensure you record and analyze the execution time and cost for both methods and batches to determine the most efficient approach.
+#

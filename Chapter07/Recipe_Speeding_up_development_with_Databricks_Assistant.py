@@ -1,5 +1,6 @@
 from pyspark.sql import SparkSession
 
+
 # Initialize the Spark session
 spark = SparkSession.builder.appName("DataAnalysisWithDatabricks").getOrCreate()
 
@@ -22,7 +23,9 @@ pyspark_df = spark.createDataFrame(pandas_df)
 # Step 3: Troubleshoot and correct code errors using the Databricks Assistant
 # Example of problematic code and the correction applied
 # incorrect_code_here  # This is just a placeholder
-corrected_code = "pyspark_df.show()"  # Assume this is the corrected code
+corrected_code = "pyspark_df.show()" 
+
+# Assume this is the corrected code
 exec(corrected_code)
 
 # Step 4: Review and refine code continuously based on the Assistant’s feedback
@@ -47,5 +50,5 @@ df.show()
 
 # Perform a specific query using Spark SQL after creating a temporary view
 df.createOrReplaceTempView("temp_data_view")
-result_df = spark.sql("SELECT * FROM temp_data_view WHERE some_column = some_value")
+result_df = spark.sql("SELECT * FROM temp_data_view WHERE some_column = 'some_value'")
 result_df.show()

@@ -4,16 +4,10 @@ import os
 from langchain.chat_models import ChatOpenAI
 from pyspark_ai import SparkAI
 
-# Step 1: Install the PySpark AI package
-%pip install pyspark-ai --upgrade
-
-# Step 2: Restart the Python kernel to ensure the package is loaded
-dbutils.library.restartPython()
-
-# Step 3: Set up the OpenAI API key as an environment variable
+# Step 1: Set up the OpenAI API key as an environment variable
 os.environ['OPENAI_API_KEY'] = '<your-openai-api-key>'  # Replace with your actual API key
 
-# Step 4: Initialize and activate the SDK
+# Step 2: Initialize and activate the SDK
 spark = SparkSession.builder.appName("DataAnalysisWithDatabricks").getOrCreate()
 chatOpenAI = ChatOpenAI(model='gpt-4')
 spark_ai = SparkAI(llm=chatOpenAI)

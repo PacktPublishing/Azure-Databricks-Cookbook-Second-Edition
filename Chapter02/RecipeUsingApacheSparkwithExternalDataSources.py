@@ -1,23 +1,27 @@
-from pyspark.sql import SparkSession
+# Display the files in the specified directory
+display(dbutils.fs.ls("/mnt/adls/Common/Customer/csvFiles/"))
+
+# Reading the CSV files with inferred schema
+df_cust = spark.read.format("csv").option("header", "true").option("inferSchema", "true").load("/mnt/adls/Common/Customer/csvFiles")
+
+# Importing required types from pyspark.sql.types
 from pyspark.sql.types import *
 
-# Initialize Spark session
-spark = SparkSession.builder.appName("ExternalDataSource").getOrCreate()
-
-# Define the schema of the CSV file
+# Defining the schema
 cust_schema = StructType([
-    StructField("C_CUSTKEY", IntegerType()),
-    StructField("C_NAME", StringType()),
-    StructField("C_ADDRESS", StringType()),
-    StructField("C_NATIONKEY", ShortType()),
-    StructField("C_PHONE", StringType()),
-    StructField("C_ACCTBAL", DoubleType()),
-    StructField("C_MKTSEGMENT", StringType()),
-    StructField("C_COMMENT", StringType())
+    StructField("C_CUSTKEY", IntegerType(), True),
+    StructField("C_NAME", StringType(), True),
+    StructField("C_ADDRESS", StringType(), True),
+    StructField("C_NATIONKEY", ShortType(), True),
+    StructField("C_PHONE", StringType(), True),
+    StructField("C_ACCTBAL", DoubleType(), True),
+    StructField("C_MKTSEGMENT", StringType(), True),
+    StructField("C_COMMENT", StringType(), True)
 ])
 
-# Load the CSV files with the specified schema
-df_cust_sch = spark.read.format("csv").option("header", True).schema(cust_schema).load("/mnt/adls/Common/Customer/csvFiles")
-
-# Display the DataFrame
-df_cust_sch.show()
+# Reading the CSV files with the defined schema
+df_cust_sch = spark.read \
+    .format("csv") \
+    .option("header", "true") \
+    .schema(cust_schema) \
+    .load("/mnt/adls/Common/Customer/csvFiles")

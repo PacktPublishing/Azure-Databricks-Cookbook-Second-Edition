@@ -5,22 +5,23 @@ from pyspark.sql import SparkSession
 spark = SparkSession.builder.appName("DataAssessmentWorkflow").getOrCreate()
 
 # SQL commands to set up environment and databases
-%sql
-CREATE DATABASE IF NOT EXISTS customer_db;
+spark.sql("CREATE DATABASE IF NOT EXISTS customer_db")
 
-%sql
+spark.sql("""
 CREATE TABLE IF NOT EXISTS customer_db.customer_info (
     id INT,
     name STRING,
     age INT,
     additional_columns_here STRING
-);
+)
+""")
 
 # Data volume assessment using COPY INTO
-%sql
+spark.sql("""
 COPY INTO customer_db.customer_info
 FROM 'dbfs:/path/to/your/files/'
-FILE_TYPE = 'CSV';
+FILE_TYPE = 'CSV'
+""")
 
 # Replace the placeholder path with your actual data path for COPY INTO
 # Record the time it takes to run the COPY INTO command and the cost of the operation
@@ -36,7 +37,7 @@ df.writeStream.format("delta").outputMode("append").option("checkpointLocation",
 
 # Schema evolution evaluation for a new batch of data
 df_new_batch = spark.readStream.format("cloudFiles").option("cloudFiles.format", "csv").load("dbfs:/path/to/your/second/batch/")
-df_new_batch.writeStream.format("delta").outputMode("append").option("checkpointLocation", "/path/to/checkpoint").start("customer_db.customer_info")
+df_new_batch.writeStream.format("delta").outputMode("append").option("checkpointLocation", "/path/to/second_checkpoint").start("customer_db.customer_info")
 
 # Replace the placeholder path with your actual data path for the second batch
 
